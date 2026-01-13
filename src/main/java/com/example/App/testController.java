@@ -16,7 +16,7 @@ public class testController {
 	
 	@GetMapping("/")
 	public String hun() {
-		return "welcome";
+		return "index";
 	}
 	
 	@PostMapping("/submit")
