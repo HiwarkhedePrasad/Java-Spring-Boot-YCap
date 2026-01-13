@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome | Interactive Experience</title>
+    <title>Welcome</title>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
     <style>
         :root {
             --bg-color: #000;
@@ -18,33 +20,29 @@
             height: 100%;
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Removed transition to prevent flickering during GSAP handoff */
         }
 
         #expansion-circle {
             position: fixed;
             top: 0;
             left: 0;
-            width: 10px; /* Smaller base size for better performance */
+            width: 10px;
             height: 10px;
             background-color: #fff;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 1;
             transform: translate(-50%, -50%) scale(0);
-            will-change: transform; /* Hint to browser for GPU optimization */
         }
 
         .content {
             position: relative;
             z-index: 10;
             text-align: center;
-            pointer-events: none;
             user-select: none;
         }
 
@@ -53,98 +51,78 @@
             margin: 0;
             font-weight: 900;
             letter-spacing: -3px;
-            line-height: 0.9;
         }
 
-        .instruction {
-            position: absolute;
-            bottom: 40px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            opacity: 0.5;
-            z-index: 10;
-        }
-
-        /* Using data-attributes or classes for state management */
         body.is-white { --bg-color: #fff; --text-color: #000; }
         body.is-black { --bg-color: #000; --text-color: #fff; }
     </style>
 </head>
+
 <body class="is-black">
 
-    <div id="expansion-circle"></div>
+<div id="expansion-circle"></div>
 
-    <div class="content">
-        <h1 id="welcome-text">WELCOME</h1>
-        <p id="sub-text" style="opacity: 0.6;">Click to explore the space</p>
-    </div>
+<div class="content">
+    <!-- 👇 Welcome user dynamically -->
+    <h1 id="welcome-text">
+        Welcome, <span th:text="${user.name}">User</span>
+    </h1>
 
-    <div class="instruction">Tap anywhere</div>
+    <p style="opacity: 0.6;">Enjoy exploring the space</p>
+</div>
 
-    <script>
-        const circle = document.getElementById('expansion-circle');
-        const body = document.body;
-        const welcomeText = document.getElementById('welcome-text');
-        let isInverted = false;
-        let isAnimating = false;
+<script>
+    const circle = document.getElementById('expansion-circle');
+    const body = document.body;
+    const welcomeText = document.getElementById('welcome-text');
+    let isInverted = false;
+    let isAnimating = false;
 
-        window.addEventListener('click', (e) => {
-            if (isAnimating) return; // Prevent overlapping animations
-            isAnimating = true;
+    window.addEventListener('click', (e) => {
+        if (isAnimating) return;
+        isAnimating = true;
 
-            const x = e.clientX;
-            const y = e.clientY;
-            const targetColor = isInverted ? "#000" : "#fff";
-            const textColor = isInverted ? "#fff" : "#000";
+        const x = e.clientX;
+        const y = e.clientY;
+        const targetColor = isInverted ? "#000" : "#fff";
+        const textColor = isInverted ? "#fff" : "#000";
 
-            // 1. Setup circle before expansion
-            gsap.set(circle, { 
-                x: x, 
-                y: y, 
-                scale: 0,
-                backgroundColor: targetColor,
-                opacity: 1
-            });
-
-            // 2. Expand Circle
-            gsap.to(circle, {
-                scale: 400, // Increased to ensure coverage on ultra-wide monitors
-                duration: 1.5,
-                ease: "expo.inOut",
-                force3D: true,
-                onStart: () => {
-                    // Sync text color change with expansion
-                    gsap.to(".content", {
-                        color: textColor,
-                        duration: 0.6,
-                        ease: "power2.out"
-                    });
-                },
-                onComplete: () => {
-                    // 3. SECURE THE HANDOFF
-                    // Immediately change body BG to match the circle's final color
-                    isInverted = !isInverted;
-                    body.className = isInverted ? 'is-white' : 'is-black';
-                    welcomeText.innerText = isInverted ? "EXPLORE" : "WELCOME";
-
-                    // Fade out the circle silently AFTER the body BG has changed
-                    // This is the secret to removing the flicker!
-                    gsap.set(circle, { opacity: 0 });
-                    isAnimating = false;
-                }
-            });
+        gsap.set(circle, {
+            x: x,
+            y: y,
+            scale: 0,
+            backgroundColor: targetColor,
+            opacity: 1
         });
 
-        // Entrance
-        window.onload = () => {
-            gsap.from(".content", {
-                scale: 0.9,
-                opacity: 0,
-                duration: 2,
-                ease: "expo.out"
-            });
-        };
-    </script>
+        gsap.to(circle, {
+            scale: 400,
+            duration: 1.5,
+            ease: "expo.inOut",
+            onStart: () => {
+                gsap.to(".content", {
+                    color: textColor,
+                    duration: 0.6
+                });
+            },
+            onComplete: () => {
+                isInverted = !isInverted;
+                body.className = isInverted ? 'is-white' : 'is-black';
+                gsap.set(circle, { opacity: 0 });
+                isAnimating = false;
+            }
+        });
+    });
+
+    window.onload = () => {
+        gsap.from(".content", {
+            scale: 0.9,
+            opacity: 0,
+            duration: 1.5,
+            ease: "expo.out"
+        });
+    };
+</script>
+
 </body>
 </html>
