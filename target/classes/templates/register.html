@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Auth Page</title>
+<style>
+    :root {
+        --primary-color: #6366f1;
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: #f1f1f1;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    /* Container for the sliding effect */
+    .auth-container {
+        background-color: var(--card-bg);
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        width: 350px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .form-box {
+        transition: transform 0.5s ease-in-out, opacity 0.4s ease;
+    }
+
+    /* Toggle Header */
+    .toggle-buttons {
+        display: flex;
+        background: #2b2b2b;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .toggle-buttons button {
+        flex: 1;
+        padding: 10px;
+        background: none;
+        border: none;
+        color: #aaa;
+        cursor: pointer;
+        z-index: 2;
+        font-weight: bold;
+        transition: color 0.3s;
+    }
+
+    .toggle-buttons button.active {
+        color: #fff;
+    }
+
+    /* The sliding highlight behind buttons */
+    .slider {
+        position: absolute;
+        width: 50%;
+        height: 100%;
+        background: var(--primary-color);
+        left: 0;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+        z-index: 1;
+    }
+
+    /* Form Styles */
+    label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+    
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #444;
+        border-radius: 8px;
+        background-color: #2b2b2b;
+        color: #fff;
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    input:focus { border-color: var(--primary-color); }
+
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+        background-color: var(--primary-color);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .submit-btn:active { transform: scale(0.98); }
+
+    /* Animation Classes */
+    .hidden { display: none; opacity: 0; transform: translateX(20px); }
+    .visible { display: block; opacity: 1; transform: translateX(0); animation: slideIn 0.4s forwards; }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="toggle-buttons">
+        <div class="slider" id="btn-slider"></div>
+        <button type="button" id="login-toggle" class="active" onclick="showForm('login')">Login</button>
+        <button type="button" id="signup-toggle" onclick="showForm('signup')">Signup</button>
+    </div>
+
+    <div id="login-section" class="form-box visible">
+        <form th:action="@{/login}" method="post">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="email@example.com" required />
+            
+            <label>Password</label>
+            <input type="password" name="password" placeholder="••••••••" required />
+            
+            <button type="submit" class="submit-btn">Sign In</button>
+        </form>
+    </div>
+
+    <div id="signup-section" class="form-box hidden">
+        <form th:action="@{/register}" th:object="${user}" method="post">
+            <label>Full Name</label>
+            <input type="text" th:field="*{name}" placeholder="John Doe" />
+
+            <label>Email</label>
+            <input type="email" th:field="*{email}" required />
+
+            <label>Password</label>
+            <input type="password" th:field="*{password}" required />
+
+            <button type="submit" class="submit-btn">Create Account</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showForm(type) {
+        const loginSection = document.getElementById('login-section');
+        const signupSection = document.getElementById('signup-section');
+        const slider = document.getElementById('btn-slider');
+        const loginToggle = document.getElementById('login-toggle');
+        const signupToggle = document.getElementById('signup-toggle');
+
+        if (type === 'login') {
+            loginSection.classList.replace('hidden', 'visible');
+            signupSection.classList.replace('visible', 'hidden');
+            slider.style.transform = 'translateX(0%)';
+            loginToggle.classList.add('active');
+            signupToggle.classList.remove('active');
+        } else {
+            signupSection.classList.replace('hidden', 'visible');
+            loginSection.classList.replace('visible', 'hidden');
+            slider.style.transform = 'translateX(100%)';
+            signupToggle.classList.add('active');
+            loginToggle.classList.remove('active');
+        }
+    }
+</script>
+
+</body>
+</html>
