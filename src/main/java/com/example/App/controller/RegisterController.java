@@ -60,11 +60,49 @@ public class RegisterController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
-        return "redirect:/register";
+        return "redirect:/auth";
     }
 
     @GetMapping("/success")
     public String successPage() {
         return "success";
+    }
+    
+    
+    
+    
+    @PostMapping("/update")
+    public String updateUser(@RequestParam String email,
+                             @RequestParam String password,
+                             HttpSession session,
+                             Model model) {
+
+      
+        User currentUser = (User) session.getAttribute("loggedInUser");
+
+       
+        if (currentUser == null) {
+            return "redirect:/auth";
+        }
+
+        try {
+   
+            currentUser.setEmail(email);
+            currentUser.setPassword(password); 
+            
+            userService.update(currentUser); 
+            
+          
+            session.setAttribute("loggedInUser", currentUser);
+
+           
+            return "redirect:/welcome";
+
+        } catch (Exception e) {
+            
+            model.addAttribute("error", "Update failed: " + e.getMessage());
+            model.addAttribute("user", currentUser);
+            return "welcome";
+        }
     }
 }
