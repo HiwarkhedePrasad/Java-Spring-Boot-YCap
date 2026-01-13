@@ -27,4 +27,11 @@ public class UserService {
                 .filter(user -> user.getEmail().equals(email) && user.getPassword().equals(password))
                 .findFirst();
     }
+    
+ // Inside UserService.java
+    public void update(User user) {
+        // If you are using Spring Data JPA, .save() works for both create and update
+        // as long as the User object has its primary key (ID) set.
+        userRepository.save(user); 
+    }
 }
