@@ -25,6 +25,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: color 0.6s; /* Smooth text transition */
         }
 
         #expansion-circle {
@@ -37,6 +38,7 @@
             border-radius: 50%;
             pointer-events: none;
             transform: translate(-50%, -50%) scale(0);
+            z-index: 1;
         }
 
         .content {
@@ -44,6 +46,10 @@
             z-index: 10;
             text-align: center;
             user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
 
         h1 {
@@ -51,6 +57,101 @@
             margin: 0;
             font-weight: 900;
             letter-spacing: -3px;
+        }
+
+        .subtitle {
+            opacity: 0.6;
+            margin-top: -10px;
+        }
+
+        /* --- New Buttons Styling --- */
+        .btn-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: transparent;
+            color: currentColor; /* Inherits black or white depending on state */
+            border: 1px solid currentColor;
+            padding: 12px 30px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border-radius: 50px; /* Pill shape matches the organic circle vibe */
+        }
+
+        .btn:hover {
+            opacity: 0.5;
+            letter-spacing: 2px; /* Subtle expansion effect */
+        }
+
+        /* --- Modal / Form Styling --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8); /* Always dark dim for focus */
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+        }
+
+        .update-card {
+            background: var(--bg-color); /* Matches current theme */
+            color: var(--text-color);    /* Matches current theme */
+            border: 1px solid currentColor;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .form-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid currentColor;
+            color: currentColor;
+            padding: 10px 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.2rem;
+            outline: none;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: currentColor;
+            font-size: 1.5rem;
+            cursor: pointer;
         }
 
         body.is-white { --bg-color: #fff; --text-color: #000; }
@@ -63,23 +164,77 @@
 <div id="expansion-circle"></div>
 
 <div class="content">
-    <!-- 👇 Welcome user dynamically -->
     <h1 id="welcome-text">
         Welcome, <span th:text="${user.name}">User</span>
     </h1>
 
-    <p style="opacity: 0.6;">Enjoy exploring the space</p>
+    <p class="subtitle">Enjoy exploring the space</p>
+
+    <div class="btn-container">
+        <button class="btn action-trigger" onclick="openModal(event)">Update</button>
+        
+        <a href="/logout" class="btn action-trigger" onclick="event.stopPropagation()">Logout</a>
+    </div>
+</div>
+
+<div class="modal-overlay" id="updateModal">
+    <div class="update-card">
+        <button class="close-btn" onclick="closeModal(event)">×</button>
+        <h2>Update Profile</h2>
+        
+        <form action="/update" method="POST">
+            <div class="form-group">
+                <label>New Email</label>
+                <input type="email" name="email" class="form-input" th:value="${user.email}" required onclick="event.stopPropagation()">
+            </div>
+            
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" name="password" class="form-input" placeholder="••••••" required onclick="event.stopPropagation()">
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%; margin-top: 10px;" onclick="event.stopPropagation()">Save Changes</button>
+        </form>
+    </div>
 </div>
 
 <script>
     const circle = document.getElementById('expansion-circle');
     const body = document.body;
-    const welcomeText = document.getElementById('welcome-text');
+    const modal = document.getElementById('updateModal');
     let isInverted = false;
     let isAnimating = false;
 
+    // --- Modal Logic ---
+    function openModal(e) {
+        e.stopPropagation(); // Stop the background color flip
+        modal.style.display = 'flex';
+        
+        // Animate Modal In
+        gsap.to(modal, { opacity: 1, duration: 0.5 });
+        gsap.from(".update-card", { y: 50, opacity: 0, duration: 0.5, ease: "power2.out" });
+    }
+
+    function closeModal(e) {
+        if(e) e.stopPropagation();
+        
+        gsap.to(modal, { 
+            opacity: 0, 
+            duration: 0.3, 
+            onComplete: () => { modal.style.display = 'none'; } 
+        });
+    }
+
+    // Close modal if clicking background overlay
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(e);
+    });
+
+    // --- Background Animation Logic ---
     window.addEventListener('click', (e) => {
+        // Prevent animation if clicking inside form or specific elements
         if (isAnimating) return;
+        
         isAnimating = true;
 
         const x = e.clientX;
@@ -87,6 +242,9 @@
         const targetColor = isInverted ? "#000" : "#fff";
         const textColor = isInverted ? "#fff" : "#000";
 
+        // Update modal styles dynamically based on inversion
+        const updateCard = document.querySelector('.update-card');
+        
         gsap.set(circle, {
             x: x,
             y: y,
@@ -100,10 +258,14 @@
             duration: 1.5,
             ease: "expo.inOut",
             onStart: () => {
-                gsap.to(".content", {
+                gsap.to(".content, .update-card", {
                     color: textColor,
                     duration: 0.6
                 });
+                // Also flip modal background if it's open (optional, but looks cool)
+                if(updateCard) {
+                    gsap.to(updateCard, { backgroundColor: targetColor, duration: 0.6 });
+                }
             },
             onComplete: () => {
                 isInverted = !isInverted;
@@ -114,6 +276,7 @@
         });
     });
 
+    // Initial Entrance
     window.onload = () => {
         gsap.from(".content", {
             scale: 0.9,
