@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Routes Documentation</title>
+    <style>
+        body { background-color: #000; color: #fff; font-family: monospace; padding: 50px; }
+        .container { border: 1px solid #fff; padding: 20px; max-width: 600px; margin: auto; }
+        h1 { border-bottom: 1px solid #fff; padding-bottom: 10px; }
+        .routes { margin-top: 20px; }
+        .route-item { margin: 10px 0; border-left: 3px solid #fff; padding-left: 10px; }
+        .method { font-weight: bold; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Made by Prasad Hiwarkhede</h1>
+        
+        <div class="routes" id="routeList">
+            </div>
+    </div>
+
+    <script>
+        const routes = [
+            { m: "GET", p: "/run" },
+            { m: "GET", p: "/" },
+            { m: "POST", p: "/submit" },
+            { m: "GET", p: "/test-success" },
+            {m:'POST',p:"/auth"}
+        ];
+
+        const list = document.getElementById('routeList');
+        routes.forEach(r => {
+            list.innerHTML += `<div class="route-item"><span class="method">${r.m}</span> ${r.p}</div>`;
+        });
+    </script>
+</body>
+</html>
