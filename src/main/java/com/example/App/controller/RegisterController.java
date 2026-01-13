@@ -14,7 +14,7 @@ public class RegisterController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/register")
+    @GetMapping("/auth")
     public String showRegisterForm(Model model) {
         model.addAttribute("user", new User());
         return "register";
@@ -47,12 +47,15 @@ public class RegisterController {
     @GetMapping("/welcome")
     public String welcomePage(HttpSession session, Model model) {
         User user = (User) session.getAttribute("loggedInUser");
+
         if (user == null) {
-            return "redirect:/register"; // Not logged in
+            return "redirect:/login";
         }
-        model.addAttribute("name", user.getName());
+
+        model.addAttribute("user", user);
         return "welcome";
     }
+
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
